@@ -43,23 +43,29 @@ const Cropper = () => {
 
     img.onload = () => {
         setLoading(false);
-      if (img.height !== 1080 && img.width !== 1350) {
-        setErrorMessage('Error: Image height must be 1080 or 1350 pixels.');
-        return;
-      }
+      // if (img.height !== 1080 || img.width !== 1350) {
+      //   setErrorMessage('Error: Image height must be 1080 or 1350 pixels.');
+      //   return;
+      // }
+      const allowedHeights = [1080, 1350 , 566];
+
+    if (!allowedHeights.includes(img.height)) {
+      setErrorMessage('Error: Image height must be either 1080 pixels or 1350 or 566 pixels.');
+      return;
+    }
 
       const canvas = document.createElement('canvas');
       canvas.width = 1080;
-      canvas.height = 1080;
+      canvas.height = img.height;
 
       const context = canvas.getContext('2d');
 
       const newCroppedImages = [];
 
       for (let x = 0; x < img.width; x += 1080) {
-        for (let y = 0; y < img.height; y += 1080) {
-          context.clearRect(0, 0, 1080, 1080);
-          context.drawImage(img, x, y, 1080, 1080, 0, 0, 1080, 1080);
+        for (let y = 0; y < img.height; y += img.height) {
+          context.clearRect(0, 0, 1080, img.height);
+          context.drawImage(img, x, y, 1080, 1080, 0, 0, 1080, img.height);
 
           const dataUrl = canvas.toDataURL('image/png');
           newCroppedImages.push(dataUrl);
@@ -109,6 +115,15 @@ const Cropper = () => {
       });
   };
 
+  const handleRefresh = () => {
+    setInputImage(null);
+    setInputImageDimensions(null);
+    setCroppedImages([]);
+    setShowCarousel(false);
+    setErrorMessage('');
+    setProgress(0);
+  };
+
   const settings = {
     dots: true,
     infinite: true,
@@ -120,6 +135,7 @@ const Cropper = () => {
   return (
     <div>
       <h1>Carousell Cropper</h1>
+      <button onClick={handleRefresh}>Refresh</button>
       <input type="file" accept="image/*" onChange={handleImageChange} />
       {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
       {inputImage && (
@@ -153,6 +169,7 @@ const Cropper = () => {
 
                 <button onClick={handleDownloadAll}>Download All</button>
                 <button onClick={handleDownloadAllZip}>Download All As Zip</button>
+               
               
               </div>
             </div>
